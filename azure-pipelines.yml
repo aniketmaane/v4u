@@ -55,6 +55,12 @@ stages:
                 -DplatformVersion="$(PLATFORM_VERSION)"
             displayName: Execute TestNG suite with Allure
 
+          - script: |
+              mkdir -p "$(System.DefaultWorkingDirectory)/build/allure-results"
+              mkdir -p "$(System.DefaultWorkingDirectory)/build/reports/allure-report"
+            displayName: Ensure Allure output folders exist
+            condition: succeededOrFailed()
+
           - task: PublishTestResults@2
             displayName: Publish TestNG XML results
             condition: succeededOrFailed()
