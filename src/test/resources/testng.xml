@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="AppiumMobileWebSmokeSuite" verbose="1" parallel="false">
+    <test name="Elevra-Mobile-Web-Smoke">
+        <parameter name="platformName" value="android"/>
+        <parameter name="browserName" value="chrome"/>
+        <parameter name="appiumServerUrl" value="http://127.0.0.1:4723"/>
+        <parameter name="deviceName" value=""/>
+        <parameter name="platformVersion" value=""/>
+        <classes>
+            <class name="com.elevra.tests.ElevraSmokeTests"/>
+        </classes>
+    </test>
+</suite>

@@ -1,0 +1,82 @@
+trigger:
+  branches:
+    include:
+      - main
+      - cursor/*
+
+pr:
+  branches:
+    include:
+      - main
+
+variables:
+  GRADLE_USER_HOME: $(Pipeline.Workspace)/.gradle
+  APPIUM_SERVER_URL: http://127.0.0.1:4723
+
+stages:
+  - stage: mobile_web_smoke
+    displayName: Appium Mobile Web Smoke Suite
+    jobs:
+      - job: android_and_ios_smoke
+        displayName: Android Chrome + iOS Safari
+        strategy:
+          matrix:
+            android_chrome:
+              PLATFORM_NAME: android
+              BROWSER_NAME: chrome
+              DEVICE_NAME: Android Emulator
+              PLATFORM_VERSION: ""
+            ios_safari:
+              PLATFORM_NAME: ios
+              BROWSER_NAME: safari
+              DEVICE_NAME: iPad Air 13-inch (M3)
+              PLATFORM_VERSION: "26.2"
+        pool:
+          vmImage: macOS-14
+        steps:
+          - checkout: self
+
+          - task: JavaToolInstaller@0
+            displayName: Use JDK 21
+            inputs:
+              versionSpec: "21"
+              jdkArchitectureOption: x64
+              jdkSourceOption: PreInstalled
+
+          - script: chmod +x ./gradlew
+            displayName: Make Gradle wrapper executable
+
+          - script: |
+              ./gradlew clean test allureReport \
+                -DplatformName=$(PLATFORM_NAME) \
+                -DbrowserName=$(BROWSER_NAME) \
+                -DappiumServerUrl=$(APPIUM_SERVER_URL) \
+                -DdeviceName="$(DEVICE_NAME)" \
+                -DplatformVersion="$(PLATFORM_VERSION)"
+            displayName: Execute TestNG suite with Allure
+
+          - task: PublishTestResults@2
+            displayName: Publish TestNG XML results
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: "**/test-results/test/*.xml"
+              mergeTestResults: true
+              failTaskOnFailedTests: false
+              testRunTitle: "$(PLATFORM_NAME)-$(BROWSER_NAME)-testng"
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish Allure results
+            condition: succeededOrFailed()
+            inputs:
+              targetPath: "$(System.DefaultWorkingDirectory)/build/allure-results"
+              artifact: "allure-results-$(PLATFORM_NAME)-$(BROWSER_NAME)"
+              publishLocation: pipeline
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish Allure HTML report
+            condition: succeededOrFailed()
+            inputs:
+              targetPath: "$(System.DefaultWorkingDirectory)/build/reports/allure-report"
+              artifact: "allure-report-$(PLATFORM_NAME)-$(BROWSER_NAME)"
+              publishLocation: pipeline
