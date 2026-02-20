@@ -169,3 +169,17 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Gradle / Java
+.gradle/
+build/
+out/
+*.class
+
+# IDE files
+.idea/
+*.iml
+
+# Allure
+allure-results/
+allure-report/

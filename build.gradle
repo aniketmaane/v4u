@@ -1,0 +1,55 @@
+plugins {
+    id 'java'
+    id 'io.qameta.allure' version '2.12.0'
+}
+
+group = 'com.elevra'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'io.appium:java-client:9.1.0'
+    implementation 'org.seleniumhq.selenium:selenium-java:4.18.1'
+    testImplementation 'org.testng:testng:7.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'io.qameta.allure:allure-testng:2.29.1'
+}
+
+test {
+    useTestNG {
+        suites 'src/test/resources/testng.xml'
+    }
+
+    systemProperty 'platformName', System.getProperty('platformName', 'android')
+    systemProperty 'browserName', System.getProperty('browserName', 'chrome')
+    systemProperty 'appiumServerUrl', System.getProperty('appiumServerUrl', 'http://127.0.0.1:4723')
+    systemProperty 'deviceName', System.getProperty('deviceName', '')
+    systemProperty 'platformVersion', System.getProperty('platformVersion', '')
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat 'full'
+        showStandardStreams = true
+    }
+}
+
+allure {
+    version = '2.29.1'
+    adapter {
+        aspectjWeaver = true
+        frameworks {
+            testng {
+                adapterVersion = '2.29.1'
+            }
+        }
+    }
+}
